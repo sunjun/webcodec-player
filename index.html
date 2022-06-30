@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>player</title>
+</head>
+
+<body>
+    <h1>Video Player</h1>
+    <div class="input">
+        <div>输入URL：</div>
+        <input autocomplete="on" id="playUrl" value="ws://10.20.10.87:20080/live/test121.flv" />
+        <button id="play">播放</button>
+        <button id="pause" style="display: none">停止</button>
+    </div>
+    <div class="input" style="line-height: 30px">
+        <button id="destroy">销毁</button>
+    </div>
+    <div id="container"></div>
+    <!-- <canvas></canvas> -->
+</body>
+<script type="module">
+
+    import { Player } from './player.js';
+    let $play = document.getElementById('play');
+    let $pause = document.getElementById('pause');
+    let $playHref = document.getElementById('playUrl');
+    let $container = document.getElementById('container');
+    let $destroy = document.getElementById('destroy');
+
+    let playerOption = {
+        container: $container,
+    };
+    let myPlayer = new Player(playerOption);
+
+    $play.style.display = 'inline-block';
+    $pause.style.display = 'none';
+    $destroy.style.display = 'none';
+
+
+    $play.addEventListener('click', function () {
+        var href = $playHref.value;
+        if (href) {
+            myPlayer.play(href);
+            $play.style.display = 'none';
+            $pause.style.display = 'inline-block';
+            $destroy.style.display = 'inline-block';
+        }
+    }, false)
+
+
+    $pause.addEventListener('click', function () {
+        $play.style.display = 'inline-block';
+        $pause.style.display = 'none';
+        myPlayer.pause();
+    })
+
+    $destroy.addEventListener('click', function () {
+        if (myPlayer) {
+            myPlayer.destroy();
+        }
+        // create();
+    })
+
+</script>
+
+</html>
