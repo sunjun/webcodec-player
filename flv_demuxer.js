@@ -108,6 +108,10 @@ class FLVDemuxer {
             this.ws.onerror = function (evt) {
                 self.logger.logError("Ws connect error " + evt.data);
             }
+            
+            this.ws.onclose = function (evt) {
+                self.logger.logError("Ws connect close " + evt.data);
+            }
 
             this.ws.onmessage = function (evt) {
                 self.demux(evt.data);

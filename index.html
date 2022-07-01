@@ -12,7 +12,7 @@
     <h1>Video Player</h1>
     <div class="input">
         <div>输入URL：</div>
-        <input autocomplete="on" id="playUrl" value="ws://10.20.10.87:20080/live/test121.flv" />
+        <input autocomplete="on" id="playUrl" value="ws://10.20.10.87:20080/live/test122.flv" />
         <button id="play">播放</button>
         <button id="pause" style="display: none">停止</button>
     </div>
@@ -33,6 +33,7 @@
     let myPlayer = null;
     let playerOption = {
         container: $container,
+        showVbps: true,
     };
 
     function create() {

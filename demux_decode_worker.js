@@ -8,6 +8,11 @@ let decoder = null;
 let offscreen = null;
 let demuxer = null;
 let hasFirstIFrame = false;
+let updateStatusInterval = null;
+let lastStatusUpdateTime = 0;
+let videoBufferLoadedLength = 0;
+let showVbps = false;
+let vbps = 0;
 
 const ENCODED_VIDEO_TYPE = {
   key: 'key',
@@ -57,6 +62,7 @@ function getFrameStats() {
 
 function onVideoData(videoBuffer, timestamp) {
   console.log("onVideoData");
+  videoBufferLoadedLength += videoBuffer.byteLength;
   let uint8Buffer = new Uint8Array(videoBuffer);
 
   if (!hasConfiged) {
@@ -92,6 +98,22 @@ function onVideoData(videoBuffer, timestamp) {
   }
 }
 
+function updateStatus() {
+  showVbps = true;
+  updateStatusInterval = setInterval(() =>{
+    let now = performance.now();
+    let elapsed = now - lastStatusUpdateTime;
+    vbps = parseInt(videoBufferLoadedLength * 8 / elapsed);
+    lastStatusUpdateTime = now;
+    videoBufferLoadedLength = 0;
+
+    self.postMessage({
+      type: 'updateStatus',
+      status: vbps + "kbps"
+    });
+  }, 500);
+}
+
 self.addEventListener('message', function (e) {
   if (e.data.type == 'init') {
     offscreen = e.data.canvas;
@@ -106,6 +128,8 @@ self.addEventListener('message', function (e) {
         ctx.font = '35px sans-serif';
         ctx.fillStyle = "#ffffff";
         ctx.fillText(getFrameStats(), 40, 40, offscreen.width);
+        if (showVbps)
+          ctx.fillText(vbps + "kbps", 40, 70, offscreen.width);
       },
       error: e => console.error(e),
     });
@@ -116,6 +140,8 @@ self.addEventListener('message', function (e) {
     console.log("decoder loaded: " + decoder);
     demuxer.open(onVideoData, e.data.uri);
   } else if (e.data.type == 'destroy') {
+    clearInterval(updateStatusInterval);
+    updateStatusInterval = null;
     if (demuxer) {
       demuxer.close();
     }
@@ -123,5 +149,7 @@ self.addEventListener('message', function (e) {
       decoder.close();
     }
     initPara();
+  } else if (e.data.type == 'showVbps') {
+    updateStatus();
   }
 })
