@@ -19,12 +19,16 @@ export class Player {
 
     play(uri) {
         this.demuxDecodeWorker.postMessage({ uri: uri, type: "play"});
+        console.log("Player start play");
     }
 
     pause() {
     }
 
     destroy() {
+        this.demuxDecodeWorker.postMessage({type: "destroy"});
+        this.$container.replaceChildren();
+        console.log("Player destroyed");
     }
 }
  

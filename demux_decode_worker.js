@@ -7,12 +7,21 @@ let hasConfiged = false;
 let decoder = null;
 let offscreen = null;
 let demuxer = null;
+let hasFirstIFrame = false;
 
 const ENCODED_VIDEO_TYPE = {
   key: 'key',
   delta: 'delta'
 };
 
+function initPara() {
+  startTime = 0;
+  frameCount = 0;
+  hasConfiged = false;
+  decoder = null;
+  offscreen = null;
+  demuxer = null;
+}
 
 function formatVideoDecoderConfigure(avcC) {
   let codecArray = avcC.subarray(1, 4);
@@ -64,13 +73,26 @@ function onVideoData(videoBuffer, timestamp) {
     }
     hasConfiged = true;
   } else {
-    const isIFrame = videoBuffer[0] >> 4 === 1;
-    const chunk = new EncodedVideoChunk({
-      data: videoBuffer.slice(5),
-      timestamp: timestamp,
-      type: isIFrame ? ENCODED_VIDEO_TYPE.key : ENCODED_VIDEO_TYPE.delta
-    })
-    decoder.decode(chunk);
+    const isIFrame = uint8Buffer[0] >> 4 === 1;
+    if (!hasFirstIFrame) {
+      if (isIFrame) {
+        // A key frame is required after configure() or flush().
+        const chunk = new EncodedVideoChunk({
+          data: uint8Buffer.slice(5),
+          timestamp: timestamp,
+          type: isIFrame ? ENCODED_VIDEO_TYPE.key : ENCODED_VIDEO_TYPE.delta
+        })
+        decoder.decode(chunk);
+        hasFirstIFrame = true;
+      }
+    } else {
+      const chunk = new EncodedVideoChunk({
+        data: uint8Buffer.slice(5),
+        timestamp: timestamp,
+        type: isIFrame ? ENCODED_VIDEO_TYPE.key : ENCODED_VIDEO_TYPE.delta
+      })
+      decoder.decode(chunk);
+    }
   }
 }
 
@@ -97,5 +119,13 @@ self.addEventListener('message', function (e) {
     // let url = "ws://172.23.110.91:8080/live/test121.live.flv";
     console.log("decoder loaded: " + decoder);
     demuxer.open(onVideoData, e.data.uri);
+  } else if (e.data.type == 'destroy') {
+    if (demuxer) {
+      demuxer.close();
+    }
+    if (decoder) {
+      decoder.close();
+    }
+    initPara();
   }
 })

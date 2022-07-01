@@ -30,19 +30,22 @@
     let $playHref = document.getElementById('playUrl');
     let $container = document.getElementById('container');
     let $destroy = document.getElementById('destroy');
-
+    let myPlayer = null;
     let playerOption = {
         container: $container,
     };
-    let myPlayer = new Player(playerOption);
 
-    $play.style.display = 'inline-block';
-    $pause.style.display = 'none';
-    $destroy.style.display = 'none';
+    function create() {
+        myPlayer = new Player(playerOption);
+
+        $play.style.display = 'inline-block';
+        $pause.style.display = 'none';
+        $destroy.style.display = 'none';
+    }
 
 
     $play.addEventListener('click', function () {
-        var href = $playHref.value;
+        let href = $playHref.value;
         if (href) {
             myPlayer.play(href);
             $play.style.display = 'none';
@@ -62,9 +65,10 @@
         if (myPlayer) {
             myPlayer.destroy();
         }
-        // create();
+        create();
     })
 
+    create();
 </script>
 
 </html>

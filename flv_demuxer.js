@@ -114,4 +114,16 @@ class FLVDemuxer {
             };
         }
     }
+    close() {
+        if (this.ws != null) {
+            this.ws.close();
+            this.ws = null;
+        }
+        this._onVideoData = null;
+        this.logger = null;
+        this.state = 0;
+        this.bodyState = 0;
+        this.uri = null;
+        this.timestamp = 0;
+    }
 }
