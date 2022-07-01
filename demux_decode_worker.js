@@ -75,24 +75,20 @@ function onVideoData(videoBuffer, timestamp) {
   } else {
     const isIFrame = uint8Buffer[0] >> 4 === 1;
     if (!hasFirstIFrame) {
+      // A key frame is required after configure() or flush().
       if (isIFrame) {
-        // A key frame is required after configure() or flush().
-        const chunk = new EncodedVideoChunk({
-          data: uint8Buffer.slice(5),
-          timestamp: timestamp,
-          type: isIFrame ? ENCODED_VIDEO_TYPE.key : ENCODED_VIDEO_TYPE.delta
-        })
-        decoder.decode(chunk);
         hasFirstIFrame = true;
+      } else {
+        // wait first I frame then decode.
+        return;
       }
-    } else {
-      const chunk = new EncodedVideoChunk({
-        data: uint8Buffer.slice(5),
-        timestamp: timestamp,
-        type: isIFrame ? ENCODED_VIDEO_TYPE.key : ENCODED_VIDEO_TYPE.delta
-      })
-      decoder.decode(chunk);
-    }
+    } 
+    const chunk = new EncodedVideoChunk({
+      data: uint8Buffer.slice(5),
+      timestamp: timestamp,
+      type: isIFrame ? ENCODED_VIDEO_TYPE.key : ENCODED_VIDEO_TYPE.delta
+    })
+    decoder.decode(chunk);
   }
 }
 
